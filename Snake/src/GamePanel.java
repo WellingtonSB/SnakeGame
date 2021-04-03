@@ -17,13 +17,15 @@ public class GamePanel extends JPanel implements ActionListener {
 	int applesEaten;
 	int appleX;
 	int appleY;
+	int superAppleY;
+	int superAppleX;
 	char direction = 'D';
 	boolean running = false;
 	Timer timer;
 	Random random;
 
 	GamePanel() {
-		random = new Random(2);
+		random = new Random();
 		this.setPreferredSize(new Dimension(SCREEN_WIDTH, SCREEN_HEIGHT));
 		this.setBackground(Color.black);
 		this.setFocusable(true);
@@ -46,13 +48,25 @@ public class GamePanel extends JPanel implements ActionListener {
 	public void draw(Graphics g) {
 
 		if (running) {
-			/*
-			 * for(int i=0;i<SCREEN_HEIGHT/UNIT_SIZE;i++) { g.drawLine(i*UNIT_SIZE, 0,
-			 * i*UNIT_SIZE, SCREEN_HEIGHT); g.drawLine(0, i*UNIT_SIZE, SCREEN_WIDTH,
-			 * i*UNIT_SIZE); }
-			 */
+
+			for (int i = 0; i < SCREEN_HEIGHT / UNIT_SIZE; i++) {
+				g.drawLine(i * UNIT_SIZE, 0, i * UNIT_SIZE, SCREEN_HEIGHT);
+				g.drawLine(0, i * UNIT_SIZE, SCREEN_WIDTH, i * UNIT_SIZE);
+			}
+
 			g.setColor(Color.red);
 			g.fillOval(appleX, appleY, UNIT_SIZE, UNIT_SIZE);
+
+			if (applesEaten == 10 || applesEaten == 20 || applesEaten == 30 || applesEaten == 40 || applesEaten == 50) {
+				g.setColor(Color.white);
+				g.fillOval(superAppleX, superAppleY, UNIT_SIZE, UNIT_SIZE);
+
+				g.setColor(Color.yellow);
+				g.setFont(new Font("Ink Free", Font.BOLD, 90));
+				FontMetrics metric = getFontMetrics(g.getFont());
+				g.drawString("BONUS", (SCREEN_WIDTH - metric.stringWidth("BONUS " + nivel)) / 2, SCREEN_HEIGHT / 2);
+
+			}
 
 			for (int i = 0; i < bodyParts; i++) {
 				if (i == 0) {
@@ -84,32 +98,40 @@ public class GamePanel extends JPanel implements ActionListener {
 	}
 
 	public void newApple() {
-		appleX = random.nextInt((int) (SCREEN_WIDTH / UNIT_SIZE)) * UNIT_SIZE;
-		appleY = random.nextInt((int) (SCREEN_HEIGHT / UNIT_SIZE)) * UNIT_SIZE;
-
+		if (applesEaten == 10) {
+			superAppleX = random.nextInt((int) (SCREEN_WIDTH / UNIT_SIZE)) * UNIT_SIZE;
+			superAppleY = random.nextInt((int) (SCREEN_WIDTH / UNIT_SIZE)) * UNIT_SIZE;
+		} else {
+			appleX = random.nextInt((int) (SCREEN_WIDTH / UNIT_SIZE)) * UNIT_SIZE;
+			appleY = random.nextInt((int) (SCREEN_HEIGHT / UNIT_SIZE)) * UNIT_SIZE;
+		}
 	}
 
 	public void nivels() {
 
 		if (applesEaten == 10) {
 			timer.setDelay(timer.getDelay() - 10);
-			nivel = nivel + 1;
+			nivel++;
 		}
 		if (applesEaten == 20) {
 			timer.setDelay(timer.getDelay() - 20);
 			nivel++;
+
 		}
 		if (applesEaten == 30) {
 			timer.setDelay(timer.getDelay() - 30);
 			nivel++;
+
 		}
 		if (applesEaten == 40) {
 			timer.setDelay(timer.getDelay() - 40);
 			nivel++;
+
 		}
 		if (applesEaten == 50) {
 			timer.setDelay(timer.getDelay() - 50);
 			nivel++;
+
 		}
 
 	}
@@ -119,7 +141,6 @@ public class GamePanel extends JPanel implements ActionListener {
 			x[i] = x[i - 1];
 			y[i] = y[i - 1];
 		}
-
 		switch (direction) {
 		case 'W':
 			y[0] = y[0] - UNIT_SIZE;
@@ -134,15 +155,20 @@ public class GamePanel extends JPanel implements ActionListener {
 			x[0] = x[0] + UNIT_SIZE;
 			break;
 		}
-
 	}
 
 	public void checkApple() {
-		if ((x[0] == appleX) && (y[0] == appleY)) {
+		if ((x[0]) == superAppleX && (y[0] == superAppleY) && (x[0] == appleX) && (y[0] == appleY)) {
+			bodyParts = bodyParts + 5;
+			applesEaten = applesEaten + 6; // +1 apple | +5 supperApple
+			newApple();
+			nivels();
+		} else if ((x[0] == appleX) && (y[0] == appleY)) {
 			bodyParts++;
 			applesEaten++;
 			newApple();
 			nivels();
+
 		}
 	}
 
@@ -153,6 +179,7 @@ public class GamePanel extends JPanel implements ActionListener {
 				running = false;
 			}
 		}
+
 		// check if head touches left border
 		if (x[0] < 0) {
 			running = false;
@@ -176,14 +203,13 @@ public class GamePanel extends JPanel implements ActionListener {
 	}
 
 	public void gameOver(Graphics g) {
-		
-		//nivel
+
+		// nivel
 		g.setColor(Color.red);
 		g.setFont(new Font("Ink Free", Font.BOLD, 40));
 		FontMetrics metrics1 = getFontMetrics(g.getFont());
-		g.drawString("Nivel: " + nivel, (SCREEN_WIDTH - metrics1.stringWidth("Nivel:" + nivel))/ 2, SCREEN_HEIGHT / 7);
-		
-				
+		g.drawString("Nivel: " + nivel, (SCREEN_WIDTH - metrics1.stringWidth("Nivel:" + nivel)) / 2, SCREEN_HEIGHT / 7);
+
 		// Score
 		g.setColor(Color.red);
 		g.setFont(new Font("Ink Free", Font.BOLD, 40));
